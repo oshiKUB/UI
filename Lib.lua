@@ -412,7 +412,7 @@ function Library:create(options)
 		Name = "Mercury",
 		Size = UDim2.fromOffset(600, 400),
 		Theme = self.Themes[settings.Theme],
-		Link = "https://discord.com"
+		Link = "https://github.com/oshiKUB/UI"
 	}, options)
 
 	if getgenv and getgenv().MercuryUI then
@@ -635,7 +635,7 @@ function Library:create(options)
 		Position = UDim2.new(0, 5, 1, -6),
 		Size = UDim2.new(0.2, 0, 0, 10),
 		Font = Enum.Font.SourceSans,
-		Text = "Status | Online",
+		Text = "Status | Idle",
 		Theme = {TextColor3 = "Tertiary"},
 		TextSize = 14,
 		TextXAlignment = Enum.TextXAlignment.Left
@@ -896,7 +896,8 @@ function Library:create(options)
 
 	rawset(mt, "creditsContainer", creditsTab.container)
 
-	creditsTab:credit{Name = "oshiKUB", Description = "UI Library Developer", Discord = "oshiKUB#6948"}
+	creditsTab:credit{Name = "oshi", Description = "UI Library Developer", Discord = "oshiKUB#6948", V3rmillion = "oshiKUB"}
+	creditsTab:credit{Name = "Repository", Description = "UI Library Repository", Github="https://github.com/oshiKUB/UI/blob/main/Lib.lua"}
 
 	return mt
 end
@@ -1267,8 +1268,6 @@ function Library:toggle(options)
 		Callback = function(state) end
 	}, options)
 
-	if options.StartingState then options.Callback(true) end
-
 	local toggleContainer = self.container:object("TextButton", {
 		Theme = {BackgroundColor3 = "Secondary"},
 		Size = UDim2.new(1, -20, 0, 52)
@@ -1376,8 +1375,10 @@ function Library:toggle(options)
 		else
 			onIcon:crossfade(offIcon, 0.1)
 		end
-		options.Callback(toggled)
+		task.spawn(function() options.Callback(toggled) end)
 	end
+
+	if options.StartingState then methods:SetState(true) end
 
 	return methods
 end
@@ -1705,7 +1706,7 @@ function Library:section(options)
 		BackgroundTransparency = 1,
 		Size = UDim2.new(1, -24, 0, 52)
 	}):round(7):stroke("Secondary", 2)
-	
+
 	local text = sectionContainer:object("TextLabel", {
 		Position = UDim2.new(0.5),
 		Text = options.Name,
@@ -1718,14 +1719,14 @@ function Library:section(options)
 		AnchorPoint = Vector2.new(0.5, 0.5)
 	})
 	text.Size = UDim2.fromOffset(text.TextBounds.X + 4, text.TextBounds.Y)
-	
-	
+
+
 	local functionContainer = sectionContainer:object("Frame", {
 		Size = UDim2.fromScale(1, 1),
 		BackgroundTransparency = 1
 	})
-	
-	
+
+
 	local layout = functionContainer:object("UIListLayout", {
 		Padding = UDim.new(0, 10),
 		HorizontalAlignment = Enum.HorizontalAlignment.Center
@@ -1734,7 +1735,7 @@ function Library:section(options)
 	functionContainer:object("UIPadding", {
 		PaddingTop = UDim.new(0, 10)
 	})
-	
+
 	return setmetatable({
 		statusText = self.statusText,
 		container = functionContainer,
@@ -2743,8 +2744,30 @@ function Library:credit(options)
 			TextXAlignment = Enum.TextXAlignment.Left
 		})
 	end
+	
+	
 
 	if setclipboard then
+	
+		if options.Github then
+			local githubContainer = creditContainer:object("TextButton", {
+				AnchorPoint = Vector2.new(1, 1),
+				Size = UDim2.fromOffset(24, 24),
+				Position = UDim2.new(1, -8, 1, -8),
+				Theme = {BackgroundColor3 = {"Main", 10}}
+			}):round(5):tooltip("copy github")
+			local github = githubContainer:object("ImageLabel", {
+				Image = "http://www.roblox.com/asset/?id=11965755499",
+				Size = UDim2.new(1, -4, 1, -4),
+				Centered = true,
+				BackgroundTransparency = 1
+			}):round(100)
+
+			githubContainer.MouseButton1Click:connect(function()
+				setclipboard(options.Github)
+			end)
+		end
+	
 		if options.Discord then
 			local discordContainer = creditContainer:object("TextButton", {
 				AnchorPoint = Vector2.new(1, 1),
@@ -3023,8 +3046,8 @@ function Library:keybind(options)
 			end
 		end)
 
-		UserInputService.InputBegan:Connect(function(key)
-			if listening then
+		UserInputService.InputBegan:Connect(function(key, gameProcessed)
+			if listening and not UserInputService:GetFocusedTextBox() then
 				if key.UserInputType == Enum.UserInputType.Keyboard then
 					if key.KeyCode ~= Enum.KeyCode.Escape then
 						options.Keybind = key.KeyCode
@@ -3455,6 +3478,55 @@ function Library:textbox(options)
 
 	function methods:Set(text)
 		textBox.Text = text
+	end
+
+	return methods
+end
+
+function Library:label(options)
+
+	options = self:set_defaults({
+		Text = "Label title",
+		Description = "Label text",
+	}, options)
+
+	local labelContainer = self.container:object("TextButton", {
+		Theme = {BackgroundColor3 = "Secondary"},
+		Size = UDim2.new(1, -20, 0, 52),
+		BackgroundTransparency = 1
+	}):round(7):stroke("Secondary", 2)
+
+	local text = labelContainer:object("TextLabel", {
+		BackgroundTransparency = 1,
+		Position = UDim2.fromOffset(10, 5),
+		Size = UDim2.new(0.5, -10, 0, 22),
+		Text = options.Text,
+		TextSize = 22,
+		Theme = {TextColor3 = "StrongText"},
+		TextXAlignment = Enum.TextXAlignment.Left
+	})
+
+	local description = labelContainer:object("TextLabel", {
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 1, -5),
+		Size = UDim2.new(0.5, -10, 1, -22),
+		Text = options.Description,
+		TextSize = 18,
+		AnchorPoint = Vector2.new(0, 1),
+		Theme = {TextColor3 = "WeakText"},
+		TextXAlignment = Enum.TextXAlignment.Left
+	})
+
+	self:_resize_tab()
+
+	local methods = {}
+
+	function methods:SetText(txt)
+		text.Text = txt
+	end
+
+	function methods:SetDescription(txt)
+		description.Text = txt
 	end
 
 	return methods
